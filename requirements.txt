@@ -1,7 +1,7 @@
 pandas
 sastrawi
-re
+regex
 googletrans==3.1.0a0
 textblob
 numpy
-scikitlearn
+scikit-learn
