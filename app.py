@@ -92,11 +92,11 @@ def convert_to_english(text):
         return text
 
 # Streamlit app
-st.title('Sentiment Analysis App')
+st.title('Sentimen analisis dengan data tweet #timnasday pada ajang ASEAN CUP 2024 U-16')
 
-user_input = st.text_area('Enter text in Indonesian:')
+user_input = st.text_area('masukan teks dalam bahasa indonesia:')
 
-if st.button('Analyze'):
+if st.button('Analisa'):
     if user_input:
         # Preprocess the text
         text = normalisasi(user_input)
@@ -113,6 +113,6 @@ if st.button('Analyze'):
         prediction = model.predict(X)[0]
 
         # Display results
-        st.write(f'Sentiment: {prediction}')
+        st.write(f'Sentimen: {prediction}')
     else:
-        st.warning('Please enter some text.')
+        st.warning('tolong masukan teks untuk dianalisa.')
