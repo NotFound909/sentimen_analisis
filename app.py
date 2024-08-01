@@ -12,6 +12,52 @@ from textblob import TextBlob
 # Load model Naive Bayes
 nb_model = pickle.load(open('naive_bayes_model.pkl', 'rb'))
 
+def clean_text(text):
+  text = re.sub(r'@[A-Za-z0-9]+', '', text)
+  text = re.sub(r'#', '', text)
+  text = re.sub(r'RT[\s]+', '', text)
+  text = re.sub(r'https?:\/\/\S+', '', text)
+  text = re.sub(r'[-+]?[0-9]+', '', text)
+  text = re.sub(r'[^\w\s]','', text)
+  text = normalize_bold_text(text)
+  text = normalize_unicode_bold(text)
+  return text
+
+def normalize_unicode_bold(text):
+    # Mapping of bold Unicode characters to normal characters
+    bold_to_normal = {
+        ord('𝐀'): 'A', ord('𝐁'): 'B', ord('𝐂'): 'C', ord('𝐃'): 'D',
+        ord('𝐄'): 'E', ord('𝐅'): 'F', ord('𝐆'): 'G', ord('𝐇'): 'H',
+        ord('𝐈'): 'I', ord('𝐉'): 'J', ord('𝐊'): 'K', ord('𝐋'): 'L',
+        ord('𝐌'): 'M', ord('𝐍'): 'N', ord('𝐎'): 'O', ord('𝐏'): 'P',
+        ord('𝐐'): 'Q', ord('𝐑'): 'R', ord('𝐒'): 'S', ord('𝐓'): 'T',
+        ord('𝐔'): 'U', ord('𝐕'): 'V', ord('𝐖'): 'W', ord('𝐗'): 'X',
+        ord('𝐘'): 'Y', ord('𝐙'): 'Z',
+        ord('𝐚'): 'a', ord('𝐛'): 'b', ord('𝐜'): 'c', ord('𝐝'): 'd',
+        ord('𝐞'): 'e', ord('𝐟'): 'f', ord('𝐠'): 'g', ord('𝐡'): 'h',
+        ord('𝐢'): 'i', ord('𝐣'): 'j', ord('𝐤'): 'k', ord('𝐥'): 'l',
+        ord('𝐦'): 'm', ord('𝐧'): 'n', ord('𝐨'): 'o', ord('𝐩'): 'p',
+        ord('𝐪'): 'q', ord('𝐫'): 'r', ord('𝐬'): 's', ord('𝐭'): 't',
+        ord('𝐮'): 'u', ord('𝐯'): 'v', ord('𝐰'): 'w', ord('𝐱'): 'x',
+        ord('𝐲'): 'y', ord('𝐳'): 'z',
+        ord('𝟎'): '0', ord('𝟏'): '1', ord('𝟐'): '2', ord('𝟑'): '3',
+        ord('𝟒'): '4', ord('𝟓'): '5', ord('𝟔'): '6', ord('𝟕'): '7',
+        ord('𝟖'): '8', ord('𝟗'): '9'
+    }
+    return text.translate(bold_to_normal)
+
+def normalize_bold_text(text):
+    bold_pattern = r'\*\*(.*?)\*\*'  # Pola untuk teks bold dalam Markdown
+    normalized_text = re.sub(bold_pattern, r'\1', text)  # Menghapus format bold
+    return normalized_text
+
+flag_pattern = re.compile(r'[\U0001F1E6-\U0001F1FF]{2}')
+
+def remove_flags(text):
+    if isinstance(text, str):
+        return re.sub(flag_pattern, '', text).strip()
+    return text
+
 # Fungsi preprocessing
 nor = {'bung':'','gak':'tidak','ghaza':'','nt':'nicetry','tdk':'tidak','papa':'apa-apa','adek':'adik','thailand':'','nguyen':'','palestina':'','israel':'','udh':'sudah','coack':'coach',
        'diskon':'','kucing':'','%':'','rp':'','cute':'','!':'','isr4el':'','streaming':'','live':'','link':'','euro':'','btw':'','prancis':'','belgia':'','mau':'ingin','ttp':'tetap',
@@ -108,7 +154,9 @@ text_input = st.text_area("Masukkan teks (Bahasa Indonesia):")
 
 if st.button("Analisis"):
     # Preprocessing
-    text_normalized = normalisasi(text_input)
+    text_clean = clean_text(text_input)
+    text_clean = remove_flags(text_clean)
+    text_normalized = normalisasi(text_clean)
     text_normalized = text_normalize(text_normalized)
     text_stopped = stopwords(text_normalized)
     text_tokenized = text_stopped.split()
