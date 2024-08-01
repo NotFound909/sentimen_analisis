@@ -72,6 +72,9 @@ def stopwords(str_text):
   str_text = stop.remove(str_text)
   return str_text
 
+def tokenize(text):
+  return text.split()
+
 def stem(text_cleaning):
   factory = StemmerFactory()
   stemmer = factory.create_stemmer()
@@ -102,6 +105,7 @@ if st.button('Analisa'):
         text = normalisasi(user_input)
         text = text_normalize(text)
         text = stopwords(text)
+        text = tokenize(text)
         text = stem(text.split())
         text = convert_to_english(text)
 
