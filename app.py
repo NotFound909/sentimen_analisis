@@ -30,7 +30,7 @@ def text_normalize(text):
   text = str.lower(text)
   return text
 
-more_stop_words = ['semangat','sudah','wasit','pelatih','yg', 'scroll', 'iih', 'yaaahh', 'lahhh', 'niee', 'wahh', 'hihiw', 'coii', 'dongg', 'aih', 'huss', 'yha',
+more_stop_words = ['yg', 'scroll', 'iih', 'yaaahh', 'lahhh', 'niee', 'wahh', 'hihiw', 'coii', 'dongg', 'aih', 'huss', 'yha',
 'hehew', 'cie', 'wuaaaaaaa', 'nahh', 'kkkk', 'ohhh', 'hwahahahahah', 'yh', 'vaaayy', 'ehehehhe', 'cengo',
 'kahh', 'mwhehehe', 'xixix', 'hdjshsjdj', 'hihi', 'huhuhu', 'atulah', 'imo', 'looooooo', 'abyss', 'wkwkwjw',
 'ahskwhskja', 'woe', 'wkwkeek', 'hmmmm', 'cuna', 'skz', 'eak', 'c', 'ehhhh', 'wkkw', 'ugh', 'donk', 'mipii',
