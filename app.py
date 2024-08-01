@@ -1,4 +1,5 @@
 import streamlit as st
+import pickle
 import pandas as pd
 import re
 import Sastrawi
@@ -6,14 +7,11 @@ from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFacto
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from googletrans import Translator
 from textblob import TextBlob
-import numpy as np
-import pickle
 
-# Load Naive Bayes model
-filename = 'naive_bayes_model.pkl'
-loaded_model = pickle.load(open(filename, 'rb'))
+# Load model Naive Bayes
+nb_model = pickle.load(open('naive_bayes_model.pkl', 'rb'))
 
-# Preprocessing functions
+# Fungsi preprocessing
 nor = {'bung':'','gak':'tidak','ghaza':'','nt':'nicetry','tdk':'tidak','papa':'apa-apa','adek':'adik','thailand':'','nguyen':'','palestina':'','israel':'','udh':'sudah','coack':'coach',
        'diskon':'','kucing':'','%':'','rp':'','cute':'','!':'','isr4el':'','streaming':'','live':'','link':'','euro':'','btw':'','prancis':'','belgia':'','mau':'ingin','ttp':'tetap',
        'ngepoor':'','brok':'','bgt':'banget','jancok':'','anjgg':'','gabsa':'tidak bisa','aus':'australia','jgn':'jangan','mesi':'','org':'orang','australiatralia':'','timnasday':''}
@@ -23,14 +21,15 @@ def normalisasi(text):
     text = text.replace(key, value)
   return text
 
-# Load key normalization data
+# Download corpus kumpulan slangwords
+# (Asumsikan file 'key_norm.csv' sudah ada di direktori yang sama)
 key_norm = pd.read_csv('key_norm.csv')
+
 def text_normalize(text):
   text = ' '.join([key_norm[key_norm['singkat'] == word]['hasil'].values[0] if (key_norm['singkat'] == word).any() else word for word in text.split()])
   text = str.lower(text)
   return text
 
-# Stopword removal
 more_stop_words = ['semangat','sudah','wasit','pelatih','yg', 'scroll', 'iih', 'yaaahh', 'lahhh', 'niee', 'wahh', 'hihiw', 'coii', 'dongg', 'aih', 'huss', 'yha',
 'hehew', 'cie', 'wuaaaaaaa', 'nahh', 'kkkk', 'ohhh', 'hwahahahahah', 'yh', 'vaaayy', 'ehehehhe', 'cengo',
 'kahh', 'mwhehehe', 'xixix', 'hdjshsjdj', 'hihi', 'huhuhu', 'atulah', 'imo', 'looooooo', 'abyss', 'wkwkwjw',
@@ -62,32 +61,29 @@ more_stop_words = ['semangat','sudah','wasit','pelatih','yg', 'scroll', 'iih', '
 'lt', 'deh', 'yth', 'pd', 'tu', 'tuuu', 'pada', 'emg', 'bln', 'bsk', 'bnr', 'kl', 'kt', 'mmf', 'diaa', 'kalii',
 'jbjb', 'gtu', 'yak', 'kyk', 'plk', 'kyg', 'elah', 'thn', 'ah', 'syahla', 'xixixixi', 'brooooooo', 'bruuuhhhh',
 'cmon', 'alias', 'dll', 'plk', 'eehh', 'hyung', 'pas', 'oh', 'toh', 'sksjsk', 'hiss', 'bang', 'bs', 'org', 'huhu',
-'wkwkwkkw', 'wkekw', 'wkekwkkk', 'braw', 'sing', 'yakmat']  # Add your list of stopwords
+'wkwkwkkw', 'wkekw', 'wkekwkkk', 'braw', 'sing', 'yakmat']  # Tambahkan daftar stop words Anda di sini
+
 stop_words = StopWordRemoverFactory().get_stop_words()
 stop_words.extend(more_stop_words)
+
 new_array = ArrayDictionary(stop_words)
 stop = StopWordRemover(new_array)
+
 def stopwords(str_text):
   str_text = stop.remove(str_text)
   return str_text
 
-# Tokenization
-def tokenize(text):
-  return text.split()
-
-# Stemming
 def stem(text_cleaning):
   factory = StemmerFactory()
   stemmer = factory.create_stemmer()
   kd = []
-  for i  in text_cleaning:
+  for i in text_cleaning:
     d = stemmer.stem(i)
     kd.append(d)
   kata_clean = []
   kata_clean = ' '.join(kd)
   return kata_clean
 
-# Translation
 def convert_to_english(text):
     translator = Translator()
     try:
@@ -97,28 +93,41 @@ def convert_to_english(text):
         print(f"Error translating text: {text} - {e}")
         return text
 
-# Sentiment prediction
+# Fungsi prediksi sentimen
 def predict_sentiment(text):
-  # Preprocess the text
-  text = normalisasi(text)
-  text = text_normalize(text)
-  text = stopwords(text)
-  text = tokenize(text)
-  text = stem(text)
-  text = convert_to_english(text)
-
-  # Extract polarity using TextBlob
-  polarity = TextBlob(text).sentiment.polarity
-  polarity_array = np.array(polarity).reshape(1, -1)
-
-  # Predict sentiment using loaded model
-  prediction = loaded_model.predict(polarity_array)[0]
-  return prediction
+    polarity = TextBlob(text).sentiment.polarity
+    polarity_feature = np.array(polarity).reshape(1, -1)
+    prediction = nb_model.predict(polarity_feature)[0]
+    return prediction
 
 # Streamlit app
-st.title("Sentiment Analysis App")
+st.title("Analisis Sentimen dan Terjemahan")
 
-text_input = st.text_area("Enter text for sentiment analysis:")
-if st.button("Analyze"):
-  prediction = predict_sentiment(text_input)
-  st.write(f"Sentiment: {prediction}")
+text_input = st.text_area("Masukkan teks (Bahasa Indonesia):")
+
+if st.button("Analisis"):
+    # Preprocessing
+    text_normalized = normalisasi(text_input)
+    text_normalized = text_normalize(text_normalized)
+    text_stopped = stopwords(text_normalized)
+    text_tokenized = text_stopped.split()
+    text_stemmed = stem(text_tokenized)
+
+    # Terjemahan
+    text_translated = convert_to_english(text_stemmed)
+
+    # Prediksi sentimen
+    sentiment = predict_sentiment(text_translated)
+
+    # Tampilkan hasil
+    st.subheader("Hasil Preprocessing:")
+    st.write("Normalisasi:", text_normalized)
+    st.write("Stopword Removal:", text_stopped)
+    st.write("Tokenisasi:", text_tokenized)
+    st.write("Stemming:", text_stemmed)
+
+    st.subheader("Terjemahan (Bahasa Inggris):")
+    st.write(text_translated)
+
+    st.subheader("Sentimen:")
+    st.write(sentiment)
