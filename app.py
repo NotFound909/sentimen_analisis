@@ -3,6 +3,7 @@ import pickle
 import pandas as pd
 import re
 import Sastrawi
+import numpy as np
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory, StopWordRemover, ArrayDictionary
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from googletrans import Translator
