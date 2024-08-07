@@ -148,7 +148,7 @@ def predict_sentiment(text):
     return prediction
 
 # Streamlit app
-st.title("Analisis Sentimen dan Terjemahan")
+st.title("Analisis Sentimen dengan data tweet #timnasday pada acara ASEAN cup u-16")
 
 text_input = st.text_area("Masukkan teks (Bahasa Indonesia):")
 
